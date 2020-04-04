@@ -16,7 +16,7 @@ def td3_continuous(**kwargs):
 
     config.task_fn = lambda: Task(config.game)
     config.eval_env = config.task_fn()
-    config.max_steps = int(1e6)
+    config.max_steps = int(1e5)
     config.eval_interval = int(1e4)
     config.eval_episodes = 20
 
@@ -45,8 +45,8 @@ if __name__ == '__main__':
     mkdir('tf_log')
     set_one_thread()
     random_seed()
-    select_device(-1)
-    # select_device(0)
+    # select_device(-1)
+    select_device(0)
 
     game = 'CartPole-v0'
     # dqn_feature(game=game)
@@ -56,7 +56,9 @@ if __name__ == '__main__':
     # n_step_dqn_feature(game=game)
     # option_critic_feature(game=game)
 
-    game = 'HalfCheetah-v2'
+    # game = 'MountainCarContinuous-v0'
+    game = 'Pendulum-v0'
+    # game = 'HalfCheetah-v2'
     # game = 'Hopper-v2'
     # a2c_continuous(game=game)
     # ppo_continuous(game=game)

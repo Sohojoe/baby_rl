@@ -9,6 +9,7 @@ torchvision==0.5.0
 # atari-py==0.1.7
 opencv-python==4.0.0.21
 # tensorboardX==1.4
+tensorboard==1.14.0
 scikit-image==0.14.2
 # tqdm==4.31.1
 # pandas==0.24.1
