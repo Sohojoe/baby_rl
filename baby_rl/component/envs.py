@@ -17,6 +17,8 @@ from gym.spaces.discrete import Discrete
 
 # from openai.baselines
 from abc import ABC, abstractmethod
+from marathon_envs.envs import MarathonEnvs
+import pathlib
 
 class VecEnv(ABC):
     """
@@ -161,6 +163,44 @@ def make_env(env_id, seed, rank, episode_life=True):
     return _thunk
 
 
+class MlAgentHelperWrapper(gym.Wrapper):
+    def __init__(self, env):
+        gym.Wrapper.__init__(self, env)
+        self.total_rewards = None
+
+        # self.observation_space = gym.spaces.Box(
+        #     self.observation_space.low[0], 
+        #     self.observation_space.high[0],
+        #     # (self.observation_space.shape[0], env.number_agents),
+        #     (env.number_agents, self.observation_space.shape[0]),
+        #     self.observation_space.dtype)
+        # self.action_space = gym.spaces.Box(
+        #     self.action_space.low[0], 
+        #     self.action_space.high[0],
+        #     # (self.action_space.shape[0], env.number_agents),
+        #     (env.number_agents, self.action_space.shape[0]),
+        #     self.action_space.dtype)
+
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action.tolist())
+        if self.total_rewards is None:
+            self.total_rewards = reward
+        else:
+            self.total_rewards = [self.total_rewards[i]+reward[i] for i in range(len(reward))]
+        info = []
+        for i in range(len(reward)):
+            if done[i]:
+                info.append({'episodic_return': self.total_rewards[i]})
+                self.total_rewards[i] = 0
+            else:
+                info.append({'episodic_return': None})
+        info = tuple(info)
+        return obs, reward, done, info
+
+    def reset(self):
+        return self.env.reset()
+
+
 class OriginalReturnWrapper(gym.Wrapper):
     def __init__(self, env):
         gym.Wrapper.__init__(self, env)
@@ -282,7 +322,7 @@ class DummyVecEnv(VecEnv):
     def close(self):
         return
 
-
+id_num = 0
 class Task:
     def __init__(self,
                  name,
@@ -290,18 +330,41 @@ class Task:
                  single_process=True,
                  log_dir=None,
                  episode_life=True,
-                 seed=None):
+                 seed=None,
+                 marathon_envs=False,
+                 no_graphics=False):
         if seed is None:
             seed = np.random.randint(int(1e9))
         if log_dir is not None:
             mkdir(log_dir)
-        envs = [make_env(name, seed, i, episode_life) for i in range(num_envs)]
-        if single_process:
-            Wrapper = DummyVecEnv
+        if marathon_envs:
+            global id_num
+            aa = pathlib.Path().absolute()
+            marathon_envs_path = os.path.join(aa,'envs', 'MarathonEnvs', 'Unity Environment.exe')
+            # marathon_envs_path = os.path.join('..','..','envs', 'MarathonEnvs')
+            from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
+            channel = EngineConfigurationChannel()
+            envs = MarathonEnvs(name, num_envs, worker_id=id_num, 
+                marathon_envs_path=marathon_envs_path, force_multiagent=True, no_graphics=no_graphics)
+            envs.seed(seed + id_num)
+            id_num += 1
+            envs = MlAgentHelperWrapper(envs)
+            # from mlagents_envs.side_channel.engine_configuration_channel import EngineConfig
+            # engine_config = EngineConfig.default_config()
+            # engine_config.time_scale = 100
+            # engine_config.quality_level = 0
+            # channel.set_configuration(engine_config)
+            # channel.set_configuration_parameters(width=80, height=80, quality_level=1, time_scale=20., target_frame_rate=-1)
+            channel.set_configuration_parameters(quality_level=0, time_scale=10., target_frame_rate=-1)
         else:
-            raise NotImplementedError
-            # Wrapper = SubprocVecEnv
-        self.env = Wrapper(envs)
+            envs = [make_env(name, seed, i, episode_life) for i in range(num_envs)]
+            if single_process:
+                Wrapper = DummyVecEnv
+            else:
+                raise NotImplementedError
+                # Wrapper = SubprocVecEnv
+            envs = Wrapper(envs)
+        self.env = envs
         self.name = name
         self.observation_space = self.env.observation_space
         self.state_dim = int(np.prod(self.env.observation_space.shape))
