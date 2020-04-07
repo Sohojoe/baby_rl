@@ -43,6 +43,7 @@ def td3_continuous(**kwargs):
 if __name__ == '__main__':
     mkdir('log')
     mkdir('tf_log')
+    mkdir('data')
     set_one_thread()
     random_seed()
     # select_device(-1)
