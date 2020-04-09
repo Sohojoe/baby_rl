@@ -48,6 +48,7 @@ class Config:
         self.num_quantiles = None
         self.optimization_epochs = 4
         self.mini_batch_size = 64
+        self.num_mini_batch = 1
         self.termination_regularizer = 0
         self.sgd_update_frequency = None
         self.random_action_prob = None

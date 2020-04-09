@@ -339,23 +339,10 @@ class Task:
             mkdir(log_dir)
         if marathon_envs:
             global id_num
-            aa = pathlib.Path().absolute()
-            marathon_envs_path = os.path.join(aa,'envs', 'MarathonEnvs', 'Unity Environment.exe')
-            # marathon_envs_path = os.path.join('..','..','envs', 'MarathonEnvs')
-            from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
-            channel = EngineConfigurationChannel()
-            envs = MarathonEnvs(name, num_envs, worker_id=id_num, 
-                marathon_envs_path=marathon_envs_path, force_multiagent=True, no_graphics=no_graphics)
+            envs = MarathonEnvs(name, num_envs, worker_id=id_num, no_graphics=no_graphics)
             envs.seed(seed + id_num)
             id_num += 1
             envs = MlAgentHelperWrapper(envs)
-            # from mlagents_envs.side_channel.engine_configuration_channel import EngineConfig
-            # engine_config = EngineConfig.default_config()
-            # engine_config.time_scale = 100
-            # engine_config.quality_level = 0
-            # channel.set_configuration(engine_config)
-            # channel.set_configuration_parameters(width=80, height=80, quality_level=1, time_scale=20., target_frame_rate=-1)
-            channel.set_configuration_parameters(quality_level=0, time_scale=10., target_frame_rate=-1)
         else:
             envs = [make_env(name, seed, i, episode_life) for i in range(num_envs)]
             if single_process:

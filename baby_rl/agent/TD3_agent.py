@@ -21,6 +21,7 @@ class TD3Agent(BaseAgent):
         self.replay = config.replay_fn()
         self.random_process = config.random_process_fn()
         self.total_steps = 0
+        self.training_steps = 0
         self.state = None
 
     def soft_update(self, target, src):
@@ -44,7 +45,7 @@ class TD3Agent(BaseAgent):
             self.state = config.state_normalizer(self.state)
 
         if self.total_steps < config.warm_up:
-            action = [self.task.action_space.sample()]
+            action = [self.task.action_space.sample() for _ in range(config.num_workers)]
         else:
             action = self.network(self.state)
             action = to_np(action)
@@ -60,37 +61,39 @@ class TD3Agent(BaseAgent):
         if done[0]:
             self.random_process.reset_states()
         self.state = next_state
-        self.total_steps += 1
+        self.total_steps += config.num_workers
+        self.training_steps += 1
 
         if self.replay.size() >= config.warm_up:
-            experiences = self.replay.sample()
-            states, actions, rewards, next_states, terminals = experiences
-            states = tensor(states)
-            actions = tensor(actions)
-            rewards = tensor(rewards).unsqueeze(-1)
-            next_states = tensor(next_states)
-            mask = tensor(1 - terminals).unsqueeze(-1)
+            for _ in range(config.num_mini_batch):
+                experiences = self.replay.sample()
+                states, actions, rewards, next_states, terminals = experiences
+                states = tensor(states)
+                actions = tensor(actions)
+                rewards = tensor(rewards).unsqueeze(-1)
+                next_states = tensor(next_states)
+                mask = tensor(1 - terminals).unsqueeze(-1)
 
-            a_next = self.target_network(next_states)
-            noise = torch.randn_like(a_next).mul(config.td3_noise)
-            noise = noise.clamp(-config.td3_noise_clip, config.td3_noise_clip)
+                a_next = self.target_network(next_states)
+                noise = torch.randn_like(a_next).mul(config.td3_noise)
+                noise = noise.clamp(-config.td3_noise_clip, config.td3_noise_clip)
 
-            min_a = float(self.task.action_space.low[0])
-            max_a = float(self.task.action_space.high[0])
-            a_next = (a_next + noise).clamp(min_a, max_a)
+                min_a = float(self.task.action_space.low[0])
+                max_a = float(self.task.action_space.high[0])
+                a_next = (a_next + noise).clamp(min_a, max_a)
 
-            q_1, q_2 = self.target_network.q(next_states, a_next)
-            target = rewards + config.discount * mask * torch.min(q_1, q_2)
-            target = target.detach()
+                q_1, q_2 = self.target_network.q(next_states, a_next)
+                target = rewards + config.discount * mask * torch.min(q_1, q_2)
+                target = target.detach()
 
-            q_1, q_2 = self.network.q(states, actions)
-            critic_loss = F.mse_loss(q_1, target) + F.mse_loss(q_2, target)
+                q_1, q_2 = self.network.q(states, actions)
+                critic_loss = F.mse_loss(q_1, target) + F.mse_loss(q_2, target)
 
-            self.network.zero_grad()
-            critic_loss.backward()
-            self.network.critic_opt.step()
+                self.network.zero_grad()
+                critic_loss.backward()
+                self.network.critic_opt.step()
 
-            if self.total_steps % config.td3_delay:
+            if self.training_steps % config.td3_delay:
                 action = self.network(states)
                 policy_loss = -self.network.q(states, action)[0].mean()
 

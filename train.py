@@ -20,6 +20,7 @@ def a2c_continuous(**kwargs):
     config.rollout_length = 5
     config.gradient_clip = 5
     config.max_steps = int(2e6)
+    config.save_interval = int(1e5)
     run_steps(A2CAgent(config))
 
 
@@ -30,11 +31,15 @@ def td3_continuous(**kwargs):
     config = Config()
     config.merge(kwargs)
 
-    n_agents = 1
-    # n_agents = 8
+    # config.num_workers = 1
+    config.num_workers = 16
+    config.mini_batch_size = 800
+    # config.mini_batch_size = 50 * config.num_workers
+    config.num_mini_batch = 1
+    # config.num_workers = 16
 
     # config.task_fn = lambda: Task(config.game, n_agents, marathon_envs=True, no_graphics=True)
-    config.task_fn = lambda: Task(config.game, n_agents, marathon_envs=True)
+    config.task_fn = lambda: Task(config.game, config.num_workers, marathon_envs=True)
     config.eval_env = Task(config.game, marathon_envs=True)
     config.max_steps = int(1e6)
     config.eval_interval = int(5e4)
@@ -49,14 +54,15 @@ def td3_continuous(**kwargs):
         actor_opt_fn=lambda params: torch.optim.Adam(params, lr=1e-3),
         critic_opt_fn=lambda params: torch.optim.Adam(params, lr=1e-3))
 
-    config.replay_fn = lambda: Replay(memory_size=int(1e6), batch_size=100)
+    config.replay_fn = lambda: Replay(memory_size=int(1e6), batch_size=config.mini_batch_size)
     config.discount = 0.99
     config.random_process_fn = lambda: GaussianProcess(
         size=(config.action_dim,), std=LinearSchedule(0.1))
     config.td3_noise = 0.2
     config.td3_noise_clip = 0.5
     config.td3_delay = 2
-    config.warm_up = int(1e4)
+    config.warm_up = int(1e5)
+    config.warm_up = max(config.warm_up, config.mini_batch_size)
     config.target_network_mix = 5e-3
     run_steps(TD3Agent(config))
 
@@ -69,10 +75,10 @@ if __name__ == '__main__':
     # select_device(-1)
     select_device(0)
 
-    # game = 'Hopper-v0'
+    game = 'Hopper-v0'
     # game = 'Walker2d-v0'
     # game = 'Ant-v0'
-    game = 'MarathonMan-v0'
+    # game = 'MarathonMan-v0'
     # game = 'MarathonManSparse-v0'
     # from marathon_envs.envs import MarathonEnvs
     # import pathlib
