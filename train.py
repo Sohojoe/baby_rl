@@ -31,12 +31,13 @@ def td3_continuous(**kwargs):
     config = Config()
     config.merge(kwargs)
 
-    # config.num_workers = 1
-    config.num_workers = 16
-    config.mini_batch_size = 800
-    # config.mini_batch_size = 50 * config.num_workers
-    config.num_mini_batch = 1
+    config.num_workers = 1
+    config.mini_batch_size = 100
     # config.num_workers = 16
+    # config.mini_batch_size = 800
+    config.num_mini_batch = 1
+    config.warm_up = int(100)
+    # config.warm_up = int(1e5)
 
     # config.task_fn = lambda: Task(config.game, n_agents, marathon_envs=True, no_graphics=True)
     config.task_fn = lambda: Task(config.game, config.num_workers, marathon_envs=True)
@@ -61,7 +62,6 @@ def td3_continuous(**kwargs):
     config.td3_noise = 0.2
     config.td3_noise_clip = 0.5
     config.td3_delay = 2
-    config.warm_up = int(1e5)
     config.warm_up = max(config.warm_up, config.mini_batch_size)
     config.target_network_mix = 5e-3
     run_steps(TD3Agent(config))
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     # select_device(-1)
     select_device(0)
 
-    game = 'Hopper-v0'
+    game, target_score = 'Hopper-v0', 500    
     # game = 'Walker2d-v0'
     # game = 'Ant-v0'
     # game = 'MarathonMan-v0'
@@ -89,4 +89,4 @@ if __name__ == '__main__':
     # a2c_continuous(game=game)
     # ppo_continuous(game=game)
     # ddpg_continuous(game=game)
-    td3_continuous(game=game)
+    td3_continuous(game=game, target_score=target_score)

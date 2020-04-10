@@ -26,7 +26,11 @@ def run_steps(agent):
                 agent.logger.info('steps %d, %.2f steps/s' % (agent.total_steps, config.log_interval / (time.time() - t0)))
                 t0 = time.time()
         if config.eval_interval and not agent.total_steps % config.eval_interval:
-            agent.eval_episodes()
+            eval_res = agent.eval_episodes()
+            eval_score = eval_res['episodic_return_test']
+            if config.target_score is not None and eval_score > config.target_score:
+                agent.close()
+                break
         if config.max_steps and agent.total_steps >= config.max_steps:
             agent.close()
             break
