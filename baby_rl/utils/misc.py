@@ -19,9 +19,12 @@ def run_steps(agent):
     agent_name = agent.__class__.__name__
     t0 = time.time()
     while True:
+        should_exit = False
+        has_saved = False
         if agent.total_steps > 0:
             if config.save_interval and not agent.total_steps % config.save_interval:
                 agent.save('data/%s-%s-%d' % (agent_name, config.tag, agent.total_steps))
+                has_saved = True
             if config.log_interval and not agent.total_steps % config.log_interval:
                 agent.logger.info('steps %d, %.2f steps/s' % (agent.total_steps, config.log_interval / (time.time() - t0)))
                 t0 = time.time()
@@ -29,11 +32,16 @@ def run_steps(agent):
             eval_res = agent.eval_episodes()
             eval_score = eval_res['episodic_return_test']
             if config.target_score is not None and eval_score > config.target_score:
-                agent.close()
-                break
+                should_exit = True
         if config.max_steps and agent.total_steps >= config.max_steps:
+            should_exit = True
+        if should_exit:
             agent.close()
+            if config.save_interval and not has_saved:
+                agent.save('data/%s-%s-%d' % (agent_name, config.tag, agent.total_steps))
+                has_saved = True
             break
+
         agent.step()
         agent.switch_task()
 

@@ -332,14 +332,15 @@ class Task:
                  episode_life=True,
                  seed=None,
                  marathon_envs=False,
-                 no_graphics=False):
+                 no_graphics=False,
+                 inference=False):
         if seed is None:
             seed = np.random.randint(int(1e9))
         if log_dir is not None:
             mkdir(log_dir)
         if marathon_envs:
             global id_num
-            envs = MarathonEnvs(name, num_envs, worker_id=id_num, no_graphics=no_graphics)
+            envs = MarathonEnvs(name, num_envs, worker_id=id_num, no_graphics=no_graphics, inference=inference)
             envs.seed(seed + id_num)
             id_num += 1
             envs = MlAgentHelperWrapper(envs)
