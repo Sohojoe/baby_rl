@@ -22,6 +22,21 @@ Implemented algorithms:
  * xxxxx show how ****
 
 
+# Install
+```
+conda env create -f environment.yml
+conda activate baby_rl
+# manually install marathon-envs
+pip install -r requirements.txt
+pip install -e .
+```
+
+for tensorboard
+```
+tensorboard --logdir=tf_log
+```
+
+
 # Usage
 
 examples.py contains examples for all the implemented algorithms
