@@ -7,6 +7,9 @@ def a2c_continuous(**kwargs):
     config.merge(kwargs)
 
     config.num_workers = 16
+    # config.num_workers = 64
+    config.max_steps = int(10e6)
+
     config.task_fn = lambda: Task(config.game, num_envs=config.num_workers, marathon_envs=True)
     config.eval_env = Task(config.game, marathon_envs=True)
     config.optimizer_fn = lambda params: torch.optim.RMSprop(params, lr=0.0007)
@@ -19,7 +22,6 @@ def a2c_continuous(**kwargs):
     config.entropy_weight = 0.01
     config.rollout_length = 5
     config.gradient_clip = 5
-    config.max_steps = int(2e6)
     config.save_interval = int(1e5)
     run_steps(A2CAgent(config))
 
@@ -31,18 +33,18 @@ def td3_continuous(**kwargs):
     config = Config()
     config.merge(kwargs)
 
-    config.num_workers = 1
+    # config.num_workers = 1
+    # config.mini_batch_size = 100
+    # config.warm_up = int(100)
+    config.num_workers = 4
     config.mini_batch_size = 100
-    # config.num_workers = 16
-    # config.mini_batch_size = 800
+    config.warm_up = int(1e5)
+    config.max_steps = int(5e6)
     config.num_mini_batch = 1
-    config.warm_up = int(100)
-    # config.warm_up = int(1e5)
 
     # config.task_fn = lambda: Task(config.game, n_agents, marathon_envs=True, no_graphics=True)
     config.task_fn = lambda: Task(config.game, config.num_workers, marathon_envs=True)
     config.eval_env = Task(config.game, marathon_envs=True)
-    config.max_steps = int(1e6)
     config.eval_interval = int(5e4)
     config.eval_episodes = 10
     config.save_interval = int(1e5)
@@ -75,10 +77,13 @@ if __name__ == '__main__':
     # select_device(-1)
     select_device(0)
 
-    game, target_score = 'Hopper-v0', 500    
+    # game, target_score = 'Hopper-v0', 500    
     # game = 'Walker2d-v0'
     # game = 'Ant-v0'
-    # game = 'MarathonMan-v0'
+    # game, target_score = 'MarathonMan-v0', 500    
+    game, target_score = 'TerrainMarathonMan-v0', 500    
+    # game, target_score = 'MarathonManBackflip-v0', 500    
+    # game = '-v0'
     # game = 'MarathonManSparse-v0'
     # from marathon_envs.envs import MarathonEnvs
     # import pathlib

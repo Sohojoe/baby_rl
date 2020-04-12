@@ -22,7 +22,7 @@ def td3_continuous(**kwargs):
     config = Config()
     config.merge(kwargs)
     config.task_fn = lambda: Task(config.game, config.num_workers, marathon_envs=True)
-    config.eval_env = Task(config.game, marathon_envs=True, inference=True)
+    config.eval_env = Task(config.game, 3, marathon_envs=True, inference=True)
     config.network_fn = lambda: TD3Net(
         config.action_dim,
         actor_body_fn=lambda: FCBody(config.state_dim, (400, 300), gate=F.relu),
@@ -40,7 +40,7 @@ def td3_continuous(**kwargs):
     config.td3_delay = 2
     config.target_network_mix = 5e-3    
     agent = TD3Agent(config)
-    agent.load('data/'+agent_name)
+    agent.load('examples/'+agent_name)
     run_steps(agent)
 
 
@@ -51,10 +51,7 @@ if __name__ == '__main__':
     # select_device(0)
 
     game, agent_name = 'Hopper-v0', 'TD3Agent-Hopper-v0-target_score_500-run-0-700000'
-    # game, target_score = 'Walker2d-v0', 500
-    # game, target_score = 'Ant-v0', 500
-    # game, target_score = 'MarathonMan-v0', 500
-    # game, target_score = 'MarathonManSparse-v0', 500
+    # game, agent_name = 'TerrainMarathonMan-v0', 'TD3Agent-TerrainMarathonMan-v0-target_score_500-run-0-5000000'
     # a2c_continuous(game=game)
     # ppo_continuous(game=game)
     # ddpg_continuous(game=game)
