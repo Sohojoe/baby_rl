@@ -8,6 +8,8 @@ def run_steps(agent):
     eval_res = agent.eval_episodes()
     eval_score = eval_res['episodic_return_test']
 
+    print('Average score:', eval_score)
+
 def a2c_continuous(**kwargs):
     generate_tag(kwargs)
     # kwargs.setdefault('log_level', 0)
@@ -45,6 +47,7 @@ def td3_continuous(**kwargs):
 
 
 if __name__ == '__main__':
+    mkdir('log')
     set_one_thread()
     random_seed()
     select_device(-1)
