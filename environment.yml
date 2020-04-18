@@ -1,4 +1,4 @@
-name: baby_rl
+name: p2
 channels:
   - defaults
   - pytorch

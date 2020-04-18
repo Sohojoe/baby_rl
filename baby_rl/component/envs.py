@@ -17,7 +17,7 @@ from gym.spaces.discrete import Discrete
 
 # from openai.baselines
 from abc import ABC, abstractmethod
-from marathon_envs.envs import MarathonEnvs
+from .mlagents_gym import MLAgentsGym
 import pathlib
 
 class VecEnv(ABC):
@@ -338,9 +338,9 @@ class Task:
             seed = np.random.randint(int(1e9))
         if log_dir is not None:
             mkdir(log_dir)
-        if marathon_envs:
+        if True:
             global id_num
-            envs = MarathonEnvs(name, num_envs, worker_id=id_num, no_graphics=no_graphics, inference=inference)
+            envs = MLAgentsGym(name, num_envs, worker_id=id_num, no_graphics=no_graphics, inference=inference)
             envs.seed(seed + id_num)
             id_num += 1
             envs = MlAgentHelperWrapper(envs)

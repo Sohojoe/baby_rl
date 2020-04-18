@@ -36,24 +36,24 @@ def td3_continuous(**kwargs):
     # config.num_workers = 1
     # config.mini_batch_size = 100
     # config.warm_up = int(100)
-    config.num_workers = 4
-    config.mini_batch_size = 100
+    config.num_workers = 20
+    config.mini_batch_size = 10
     config.warm_up = int(1e5)
     config.max_steps = int(5e6)
     config.num_mini_batch = 1
 
     # config.task_fn = lambda: Task(config.game, n_agents, marathon_envs=True, no_graphics=True)
-    config.task_fn = lambda: Task(config.game, config.num_workers, marathon_envs=True)
-    config.eval_env = Task(config.game, marathon_envs=True)
+    config.task_fn = lambda: Task(config.game, config.num_workers)
+    config.eval_env = Task(config.game, 20)
     config.eval_interval = int(5e4)
     config.eval_episodes = 10
     config.save_interval = int(1e5)
 
     config.network_fn = lambda: TD3Net(
         config.action_dim,
-        actor_body_fn=lambda: FCBody(config.state_dim, (400, 300), gate=F.relu),
+        actor_body_fn=lambda: FCBody(config.state_dim, (32, 32), gate=F.relu),
         critic_body_fn=lambda: FCBody(
-            config.state_dim+config.action_dim, (400, 300), gate=F.relu),
+            config.state_dim+config.action_dim, (32, 32), gate=F.relu),
         actor_opt_fn=lambda params: torch.optim.Adam(params, lr=1e-3),
         critic_opt_fn=lambda params: torch.optim.Adam(params, lr=1e-3))
 

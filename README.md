@@ -25,9 +25,11 @@ Implemented algorithms:
 # Install
 ```
 conda env create -f environment.yml
-conda activate baby_rl
-# manually install marathon-envs
+conda activate p2
 pip install -r requirements.txt
+cd unityagents
+pip install -e .
+cd ..
 pip install -e .
 ```
 
