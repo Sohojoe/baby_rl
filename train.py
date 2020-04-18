@@ -6,9 +6,9 @@ def a2c_continuous(**kwargs):
     config = Config()
     config.merge(kwargs)
 
-    config.num_workers = 16
+    config.num_workers = 20
     # config.num_workers = 64
-    config.max_steps = int(10e6)
+    config.max_steps = int(1e6)
 
     config.task_fn = lambda: Task(config.game, num_envs=config.num_workers, marathon_envs=True)
     config.eval_env = Task(config.game, marathon_envs=True)
@@ -37,16 +37,17 @@ def td3_continuous(**kwargs):
     # config.mini_batch_size = 100
     # config.warm_up = int(100)
     config.num_workers = 20
-    config.mini_batch_size = 10
+    config.mini_batch_size = 400
     config.warm_up = int(1e5)
-    config.max_steps = int(5e6)
+    config.max_steps = int(1e6)
     config.num_mini_batch = 1
 
-    # config.task_fn = lambda: Task(config.game, n_agents, marathon_envs=True, no_graphics=True)
-    config.task_fn = lambda: Task(config.game, config.num_workers)
+    # config.task_fn = lambda: Task(config.game, config.num_workers)
+    config.task_fn = lambda: config.eval_env
     config.eval_env = Task(config.game, 20)
-    config.eval_interval = int(5e4)
-    config.eval_episodes = 10
+    # config.eval_env.close()
+    config.eval_interval = int(1e5)
+    config.eval_episodes = 3
     config.save_interval = int(1e5)
 
     config.network_fn = lambda: TD3Net(
@@ -74,8 +75,8 @@ if __name__ == '__main__':
     mkdir('data')
     set_one_thread()
     random_seed()
-    # select_device(-1)
-    select_device(0)
+    select_device(-1)
+    # select_device(0)
 
     # game, target_score = 'Hopper-v0', 500    
     # game = 'Walker2d-v0'

@@ -17,7 +17,7 @@ from gym.spaces.discrete import Discrete
 
 # from openai.baselines
 from abc import ABC, abstractmethod
-from .mlagents_gym import MLAgentsGym
+from .mlagents_env import MLAgentsEnv
 import pathlib
 
 class VecEnv(ABC):
@@ -340,7 +340,7 @@ class Task:
             mkdir(log_dir)
         if True:
             global id_num
-            envs = MLAgentsGym(name, num_envs, worker_id=id_num, no_graphics=no_graphics, inference=inference)
+            envs = MLAgentsEnv(name, num_envs, worker_id=id_num, no_graphics=no_graphics, inference=inference)
             envs.seed(seed + id_num)
             id_num += 1
             envs = MlAgentHelperWrapper(envs)
