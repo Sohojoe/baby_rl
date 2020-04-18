@@ -53,8 +53,10 @@ if __name__ == '__main__':
     select_device(-1)
     # select_device(0)
 
-    game, agent_name = 'Hopper-v0', 'TD3Agent-Hopper-v0-target_score_500-run-0-700000'
+    # game, agent_name = 'Hopper-v0', 'TD3Agent-Hopper-v0-target_score_500-run-0-700000'
     # game, agent_name = 'TerrainMarathonMan-v0', 'TD3Agent-TerrainMarathonMan-v0-target_score_500-run-0-5000000'
+    # game, agent_name = 'TerrainMarathonMan-v0', 'TD3Agent-TerrainMarathonMan-v0-target_score_500-run-0-12500000'
+    game, agent_name = 'TerrainMarathonMan-v0', 'TD3Agent-TerrainMarathonMan-v0-target_score_500-run-0-15300000'
     # a2c_continuous(game=game)
     # ppo_continuous(game=game)
     # ddpg_continuous(game=game)
