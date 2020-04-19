@@ -37,9 +37,9 @@ def td3_continuous(**kwargs):
     # config.mini_batch_size = 100
     # config.warm_up = int(100)
     config.num_workers = 20
-    config.mini_batch_size = 400
+    config.mini_batch_size = 2000
     config.warm_up = int(1e5)
-    config.max_steps = int(1e6)
+    config.max_steps = int(3e6)
     config.num_mini_batch = 1
 
     # config.task_fn = lambda: Task(config.game, config.num_workers)
@@ -74,25 +74,15 @@ if __name__ == '__main__':
     mkdir('tf_log')
     mkdir('data')
     set_one_thread()
+    # set_num_thread(2)
     random_seed()
     select_device(-1)
     # select_device(0)
 
-    # game, target_score = 'Hopper-v0', 500    
-    # game = 'Walker2d-v0'
-    # game = 'Ant-v0'
-    # game, target_score = 'MarathonMan-v0', 500    
-    game, target_score = 'TerrainMarathonMan-v0', 500    
-    # game, target_score = 'MarathonManBackflip-v0', 500    
-    # game = '-v0'
-    # game = 'MarathonManSparse-v0'
-    # from marathon_envs.envs import MarathonEnvs
-    # import pathlib
-    # aa = pathlib.Path().absolute()
-    # marathon_envs_path = os.path.join(aa,'envs', 'MarathonEnvs', 'Unity Environment.exe')
-    # # envs = MarathonEnvs(game, 1)
-    # envs = MarathonEnvs(game, 1, marathon_envs_path=marathon_envs_path)
+    game = 'Reacher'
+    # game, target_score = 'Reacher', 500    
     # a2c_continuous(game=game)
     # ppo_continuous(game=game)
     # ddpg_continuous(game=game)
-    td3_continuous(game=game, target_score=target_score)
+    # td3_continuous(game=game, target_score=target_score)
+    td3_continuous(game=game)

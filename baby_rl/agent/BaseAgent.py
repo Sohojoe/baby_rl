@@ -17,6 +17,7 @@ class BaseAgent:
         self.config = config
         self.logger = get_logger(tag=config.tag, log_level=config.log_level)
         self.task_ind = 0
+        self._n_episode = 0
 
     def close(self):
         close_obj(self.task)
@@ -61,10 +62,20 @@ class BaseAgent:
 
     def record_online_return(self, info, offset=0):
         if isinstance(info, dict):
-            ret = info['episodic_return']
+            ret = info['episodic_return'] if 'episodic_return' in info else None
             if ret is not None:
                 self.logger.add_scalar('episodic_return_train', ret, self.total_steps + offset)
                 self.logger.info('steps %d, episodic_return_train %s' % (self.total_steps + offset, ret))
+                self.logger.add_scalar('ep_episodic_return_train', ret, int(self._n_episode))
+                self.logger.info('steps %d, ep_episodic_return_train %s' % (self._n_episode, ret))
+            ret = info['ave_rewards_over_100_ep'] if 'ave_rewards_over_100_ep' in info else None
+            if ret is not None:
+                self.logger.add_scalar('ave_rewards_over_100_ep', ret, self.total_steps + offset)
+                self.logger.info('steps %d, ave_rewards_over_100_ep %s' % (self.total_steps + offset, ret))
+                self.logger.add_scalar('ep_ave_rewards_over_100_ep', ret, int(self._n_episode))
+                self.logger.info('steps %d, ep_ave_rewards_over_100_ep %s' % (self._n_episode, ret))
+                self._n_episode += 1
+
         elif isinstance(info, tuple):
             for i, info_ in enumerate(info):
                 self.record_online_return(info_, i)

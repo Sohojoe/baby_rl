@@ -43,6 +43,11 @@ def set_one_thread():
     os.environ['MKL_NUM_THREADS'] = '1'
     torch.set_num_threads(1)
 
+def set_num_thread(n):
+    os.environ['OMP_NUM_THREADS'] = str(n)
+    os.environ['MKL_NUM_THREADS'] = str(n)
+    torch.set_num_threads(n)
+
 
 def huber(x, k=1.0):
     return torch.where(x.abs() < k, 0.5 * x.pow(2), k * (x.abs() - 0.5 * k))

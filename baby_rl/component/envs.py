@@ -10,6 +10,7 @@ import numpy as np
 import torch
 from gym.spaces.box import Box
 from gym.spaces.discrete import Discrete
+from collections import deque
 
 # from baselines.common.atari_wrappers import make_atari, wrap_deepmind
 # from baselines.common.atari_wrappers import FrameStack as FrameStack_
@@ -167,6 +168,7 @@ class MlAgentHelperWrapper(gym.Wrapper):
     def __init__(self, env):
         gym.Wrapper.__init__(self, env)
         self.total_rewards = None
+        self.scores_window = deque(maxlen=100)
 
         # self.observation_space = gym.spaces.Box(
         #     self.observation_space.low[0], 
@@ -187,13 +189,20 @@ class MlAgentHelperWrapper(gym.Wrapper):
             self.total_rewards = reward
         else:
             self.total_rewards = [self.total_rewards[i]+reward[i] for i in range(len(reward))]
-        info = []
-        for i in range(len(reward)):
-            if done[i]:
-                info.append({'episodic_return': self.total_rewards[i]})
-                self.total_rewards[i] = 0
-            else:
-                info.append({'episodic_return': None})
+        info = [{'episodic_return': None} for _ in range(len(reward))]
+        # all episodes end at same time, so we want the average
+        if done[0]:
+            ave_total_reward = sum(self.total_rewards) / len(self.total_rewards)
+            info[0] = {'episodic_return': ave_total_reward}
+            self.scores_window.append(self.total_rewards)
+            info[1] = {'ave_rewards_over_100_ep': np.mean(self.scores_window)}
+            self.total_rewards = [0 for _ in range(len(self.total_rewards))]
+        # for i in range(len(reward)):
+        #     if done[i]:
+        #         info.append({'episodic_return': self.total_rewards[i]})
+        #         self.total_rewards[i] = 0
+        #     else:
+        #         info.append({'episodic_return': None})
         info = tuple(info)
         return obs, reward, done, info
 
