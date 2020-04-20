@@ -1,55 +1,32 @@
 from baby_rl import *
 
-def a2c_continuous(**kwargs):
-    generate_tag(kwargs)
-    kwargs.setdefault('log_level', 0)
-    config = Config()
-    config.merge(kwargs)
-
-    config.num_workers = 20
-    # config.num_workers = 64
-    config.max_steps = int(1e6)
-
-    config.task_fn = lambda: Task(config.game, num_envs=config.num_workers, marathon_envs=True)
-    config.eval_env = Task(config.game, marathon_envs=True)
-    config.optimizer_fn = lambda params: torch.optim.RMSprop(params, lr=0.0007)
-    config.network_fn = lambda: GaussianActorCriticNet(
-        config.state_dim, config.action_dim,
-        actor_body=FCBody(config.state_dim), critic_body=FCBody(config.state_dim))
-    config.discount = 0.99
-    config.use_gae = True
-    config.gae_tau = 1.0
-    config.entropy_weight = 0.01
-    config.rollout_length = 5
-    config.gradient_clip = 5
-    config.save_interval = int(1e5)
-    run_steps(A2CAgent(config))
-
-
 # TD3
 def td3_continuous(**kwargs):
+    # set up the default config and add the args
     generate_tag(kwargs)
     kwargs.setdefault('log_level', 0)
     config = Config()
     config.merge(kwargs)
 
-    # config.num_workers = 1
-    # config.mini_batch_size = 100
-    # config.warm_up = int(100)
+    # set number of workers and batch size
     config.num_workers = 20
     config.mini_batch_size = 2000
-    config.warm_up = int(1e5)
-    config.max_steps = int(3e6)
     config.num_mini_batch = 1
+    # number of random actions before training starts
+    config.warm_up = int(1e5)
+    # set the max number of taining steps to take
+    config.max_steps = int(3e6)
 
-    # config.task_fn = lambda: Task(config.game, config.num_workers)
+    # set up the environment
     config.task_fn = lambda: config.eval_env
     config.eval_env = Task(config.game, 20)
-    # config.eval_env.close()
+    # 
     config.eval_interval = int(1e5)
     config.eval_episodes = 3
+    # set how often to save the model
     config.save_interval = int(1e5)
 
+    # set the nn size and learning weights
     config.network_fn = lambda: TD3Net(
         config.action_dim,
         actor_body_fn=lambda: FCBody(config.state_dim, (32, 32), gate=F.relu),
@@ -58,6 +35,7 @@ def td3_continuous(**kwargs):
         actor_opt_fn=lambda params: torch.optim.Adam(params, lr=1e-3),
         critic_opt_fn=lambda params: torch.optim.Adam(params, lr=1e-3))
 
+    # create the replay buffer and hyper parameters
     config.replay_fn = lambda: Replay(memory_size=int(1e6), batch_size=config.mini_batch_size)
     config.discount = 0.99
     config.random_process_fn = lambda: GaussianProcess(
@@ -67,22 +45,23 @@ def td3_continuous(**kwargs):
     config.td3_delay = 2
     config.warm_up = max(config.warm_up, config.mini_batch_size)
     config.target_network_mix = 5e-3
+
+    # start training
     run_steps(TD3Agent(config))
 
 if __name__ == '__main__':
+    # create sub directories
     mkdir('log')
     mkdir('tf_log')
     mkdir('data')
+    # set one thread as this seams to train faster
     set_one_thread()
-    # set_num_thread(2)
+    # set the seed
     random_seed()
+    # choose between cpu(-1) and gpu(0)
     select_device(-1)
     # select_device(0)
 
+    # train the reacher environment
     game = 'Reacher'
-    # game, target_score = 'Reacher', 500    
-    # a2c_continuous(game=game)
-    # ppo_continuous(game=game)
-    # ddpg_continuous(game=game)
-    # td3_continuous(game=game, target_score=target_score)
     td3_continuous(game=game)
