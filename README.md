@@ -1,3 +1,5 @@
+[p2_solution]: images/p2_solution.gif "p2_solution"
+
 # Udacity Reinforcement Learning Nanodegree Project Two: Continuous Control
 
 This is my submission for Project Two: Continuous Control.
@@ -14,6 +16,8 @@ See Report.md for more details
 ## Reacher Environment
 
 This submission solves the Reacher environment.
+
+![Reacher Environment][p2_solution]
 
 The goal of this environment is for a double-jointed arm to move it's hand to a target location which is constantly changing. The environment gives a reward of +0.1 for each step where the agents's hand is in the correct target location.
 
