@@ -38,12 +38,15 @@ def td3_continuous(**kwargs):
     # create the replay buffer and hyper parameters
     config.replay_fn = lambda: Replay(memory_size=int(1e6), batch_size=config.mini_batch_size)
     config.discount = 0.99
+    # set the random procress for actions
     config.random_process_fn = lambda: GaussianProcess(
         size=(config.action_dim,), std=LinearSchedule(0.1))
+    # how much noise to add
     config.td3_noise = 0.2
     config.td3_noise_clip = 0.5
+    # delay between action steps and soft updates
     config.td3_delay = 2
-    config.warm_up = max(config.warm_up, config.mini_batch_size)
+    # soft update value
     config.target_network_mix = 5e-3
 
     # start training
